@@ -4,6 +4,7 @@ import os
 import time
 from prometheus_client import start_http_server, Gauge, Enum
 import requests
+from matillion import MatillionClient
 
 class AppMetrics:
     """
@@ -15,11 +16,13 @@ class AppMetrics:
         self.app_port = app_port
         self.polling_interval_seconds = polling_interval_seconds
 
+        self.matillion_client = MatillionClient()
+
         # Prometheus metrics to collect
         self.current_requests = Gauge("app_requests_current", "Current requests")
         self.pending_requests = Gauge("app_requests_pending", "Pending requests")
         self.total_uptime = Gauge("app_uptime", "Uptime")
-        self.health = Enum("app_health", "Health", states=["healthy", "unhealthy"])
+        self.task_state = Enum("task_state", "state", states=["SUCCESS", "FAILED", "RUNNING"])
 
     def run_metrics_loop(self):
         """Metrics fetching loop"""
@@ -33,6 +36,12 @@ class AppMetrics:
         Get metrics from application and refresh Prometheus metrics with
         new values.
         """
+
+        matillion_projects = self.matillion_client.get_all_projects()
+
+        for project in matillion_projects:
+            pass
+
 
         # Fetch raw status data from the application
         resp = requests.get(url=f"http://localhost:{self.app_port}/status")
